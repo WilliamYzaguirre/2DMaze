@@ -1,5 +1,7 @@
 #include "depthmazegenerator.h"
 #include <iostream>
+#include <QCoreApplication>
+#include <QThread>
 
 DepthMazeGenerator::DepthMazeGenerator()
     :engine{device()}
@@ -10,6 +12,8 @@ DepthMazeGenerator::DepthMazeGenerator()
 void DepthMazeGenerator::generateMaze(Maze &maze)
 {
     maze.addAllWalls();
+
+    QCoreApplication::processEvents();
 
     int currentx = 0;
     int currenty = 0;
@@ -97,6 +101,7 @@ bool DepthMazeGenerator::doneCheck() const noexcept
 
 void DepthMazeGenerator::recursion(int x, int y, Maze &maze)
 {
+    QCoreApplication::processEvents();
     int random;
     std::uniform_int_distribution<int> distribution{0,4};
     while (!doneCheck())

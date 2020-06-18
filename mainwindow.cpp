@@ -234,8 +234,10 @@ void MainWindow::addAllWalls()
 
         }
     }
-    mazeScene->update();
-    ui->drawArea->update();
+    if (ui->animationToggle->isChecked())
+    {
+        QThread::msleep(600 - ui->animationSlider->value());
+    }
 }
 
 void MainWindow::removeAllWalls()
@@ -288,11 +290,10 @@ void MainWindow::removeWall(int x, int y, Direction direction)
             innerWalls[endCellLoc][i].second = nullptr;
         }
     }
-    QTimer* timer = new QTimer;
-    timer->setSingleShot(true);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateView()));
-    timer->start(10000);
-    //delete timer;
+    if (ui->animationToggle->isChecked())
+    {
+        QThread::msleep(600 - ui->animationSlider->value());
+    }
 }
 
 

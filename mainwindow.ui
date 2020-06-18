@@ -244,19 +244,25 @@
       <item>
        <widget class="QSlider" name="animationSlider">
         <property name="minimum">
-         <number>1</number>
+         <number>100</number>
         </property>
         <property name="maximum">
-         <number>11</number>
+         <number>500</number>
+        </property>
+        <property name="sliderPosition">
+         <number>100</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="invertedControls">
+         <bool>false</bool>
         </property>
         <property name="tickPosition">
          <enum>QSlider::TicksBelow</enum>
         </property>
         <property name="tickInterval">
-         <number>2</number>
+         <number>100</number>
         </property>
        </widget>
       </item>
