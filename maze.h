@@ -25,7 +25,7 @@ public:
 
     int getHeight() const noexcept;
 
-    bool wallExists(int x, int y, Direction direction);
+    bool wallExists(int x, int y, Direction direction) const;
 
     void addWall(int x, int y, Direction direction);
 

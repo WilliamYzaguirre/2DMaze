@@ -21,7 +21,7 @@ int Maze::getHeight() const noexcept
     return height;
 }
 
-bool Maze::wallExists(int x, int y, Direction direction)
+bool Maze::wallExists(int x, int y, Direction direction) const
 {
     int startCellLoc = y * width + x;
     int endCellLoc;
@@ -186,3 +186,4 @@ void Maze::printMaze()
         std::cout << std::endl;
     }
 }
+

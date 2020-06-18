@@ -7,10 +7,13 @@
 #include "Direction.h"
 #include "depthmazegenerator.h"
 #include <QTimer>
+#include "semirandommazesolver.h"
+#include "mazesolution.h"
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow), mazeGenerated{false}, mazeSolved{false}
 {
     ui->setupUi(this);
     mazeScene = new QGraphicsScene;
@@ -45,33 +48,44 @@ void MainWindow::animateMazeGeneration()
 
 void MainWindow::on_generateButton_clicked()
 {
-    DepthMazeGenerator* generator = new DepthMazeGenerator;
+    DepthMazeGenerator generator;
     mazeHeight = ui->heightSlider->value();
     mazeWidth = ui->widthSlider->value();
     innerWalls = new std::vector<std::pair<int, QGraphicsLineItem*>>[mazeWidth*mazeHeight];
     mazeScene->clear();
-    Maze newMaze(mazeWidth, mazeHeight);
-    connect(&newMaze, SIGNAL(allWallsAdded()), this, SLOT(addAllWalls()));
-    connect(&newMaze, SIGNAL(allWallsRemoved()), this, SLOT(removeAllWalls()));
-    connect(&newMaze, SIGNAL(wallAdded(int, int, Direction)), this, SLOT(addWall(int, int, Direction)));
-    connect(&newMaze, SIGNAL(wallRemoved(int, int, Direction)), this, SLOT(removeWall(int, int, Direction)));
-    generator->generateMaze(newMaze);
-    delete generator;
+    if (mazeGenerated == true)
+    {
+        delete maze;
+        mazeGenerated = false;
+    }
+    maze = new Maze(mazeWidth, mazeHeight);
+    connect(maze, SIGNAL(allWallsAdded()), this, SLOT(addAllWalls()));
+    connect(maze, SIGNAL(allWallsRemoved()), this, SLOT(removeAllWalls()));
+    connect(maze, SIGNAL(wallAdded(int, int, Direction)), this, SLOT(addWall(int, int, Direction)));
+    connect(maze, SIGNAL(wallRemoved(int, int, Direction)), this, SLOT(removeWall(int, int, Direction)));
+    generator.generateMaze(*maze);
+    mazeGenerated = true;
 }
 
 void MainWindow::on_solveButton_clicked()
 {
-
+    if (mazeGenerated == true)
+    {
+        if (mazeSolved == true)
+        {
+            solutionRestarted();
+        }
+        SemiRandomMazeSolver solver;
+        MazeSolution solution(std::make_pair(0,0), std::make_pair(mazeWidth, mazeHeight), mazeWidth, mazeHeight);
+        connect(&solution, SIGNAL(moved(std::pair<int,int>, Direction)), this, SLOT(solutionMoved(std::pair<int,int>, Direction)));
+        connect(&solution, SIGNAL(back()), this, SLOT(solutionBack()));
+        connect(&solution, SIGNAL(restarted()), this, SLOT(solutionRestarted()));
+        solver.solveMaze(*maze, solution);
+    }
 }
 
 void MainWindow::on_animationToggle_clicked()
 {
-}
-
-void MainWindow::updateView()
-{
-    mazeScene->update();
-    ui->drawArea->update();
 }
 
 void MainWindow::addAllWalls()
@@ -236,7 +250,7 @@ void MainWindow::addAllWalls()
     }
     if (ui->animationToggle->isChecked())
     {
-        QThread::msleep(600 - ui->animationSlider->value());
+        QThread::msleep(550 - ui->animationSlider->value());
     }
 }
 
@@ -292,7 +306,56 @@ void MainWindow::removeWall(int x, int y, Direction direction)
     }
     if (ui->animationToggle->isChecked())
     {
-        QThread::msleep(600 - ui->animationSlider->value());
+        QThread::msleep(550 - ui->animationSlider->value());
+    }
+}
+
+void MainWindow::solutionMoved(std::pair<int,int> cell, Direction direction)
+{
+    int start = 30;
+    int end = 670;
+    int xincrement = (end - start) / mazeWidth;
+    int yincrement = (end - start) / mazeHeight;
+    QPen pen;
+    pen.setColor(Qt::red);
+    pen.setWidth(2);
+    switch (direction)
+    {
+    case Direction::up:
+        solutionMoves.push_back(mazeScene->addLine(double(start + cell.first * xincrement + (.5 * xincrement)), double(start + cell.second * yincrement + (.5 * yincrement)), double(start + cell.first * xincrement + (.5 * xincrement)), double(start + cell.second * yincrement + (.5 * yincrement) - yincrement), pen));
+        break;
+    case Direction::down:
+        solutionMoves.push_back(mazeScene->addLine(double(start + cell.first * xincrement + (.5 * xincrement)), double(start + cell.second * yincrement + (.5 * yincrement)), double(start + cell.first * xincrement + (.5 * xincrement)), double(start + cell.second * yincrement + (.5 * yincrement) + yincrement), pen));
+        break;
+    case Direction::left:
+        solutionMoves.push_back(mazeScene->addLine(double(start + cell.first * xincrement + (.5 * xincrement)), double(start + cell.second * yincrement + (.5 * yincrement)), double(start + cell.first * xincrement + (.5 * xincrement) - xincrement), double(start + cell.second * yincrement + (.5 * yincrement)), pen));
+        break;
+    case Direction::right:
+        solutionMoves.push_back(mazeScene->addLine(double(start + cell.first * xincrement + (.5 * xincrement)), double(start + cell.second * yincrement + (.5 * yincrement)), double(start + cell.first * xincrement + (.5 * xincrement) + xincrement), double(start + cell.second * yincrement + (.5 * yincrement)), pen));
+        break;
+    }
+    if (ui->animationToggle->isChecked())
+    {
+        QThread::msleep(550 - ui->animationSlider->value());
+    }
+}
+
+void MainWindow::solutionBack()
+{
+    mazeScene->removeItem(solutionMoves.back());
+    solutionMoves.pop_back();
+    if (ui->animationToggle->isChecked())
+    {
+        QThread::msleep(550 - ui->animationSlider->value());
+    }
+}
+
+void MainWindow::solutionRestarted()
+{
+    for (int i = 0; i < solutionMoves.size(); ++i)
+    {
+        mazeScene->removeItem(solutionMoves.back());
+        solutionMoves.pop_back();
     }
 }
 

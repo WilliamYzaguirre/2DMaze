@@ -20,6 +20,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     maze.cpp \
+    mazesolution.cpp \
     semirandommazesolver.cpp
 
 HEADERS += \
@@ -27,6 +28,7 @@ HEADERS += \
     depthmazegenerator.h \
     mainwindow.h \
     maze.h \
+    mazesolution.h \
     semirandommazesolver.h
 
 FORMS += \

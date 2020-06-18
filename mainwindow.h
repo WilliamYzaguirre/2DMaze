@@ -7,6 +7,8 @@
 #include "Direction.h"
 #include <memory>
 #include <queue>
+#include "maze.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -38,22 +40,28 @@ private slots:
 
     void on_animationToggle_clicked();
 
-    void updateView();
-
 public slots:
     void addAllWalls();
     void removeAllWalls();
     void addWall(int x, int y, Direction direction);
     void removeWall(int x, int y, Direction direction);
 
+    void solutionMoved(std::pair<int,int> cell, Direction direction);
+    void solutionBack();
+    void solutionRestarted();
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene* mazeScene;
-    //QGraphicsLineItem** walls;
+    Maze* maze;
     std::vector<std::pair<int, QGraphicsLineItem*>>* innerWalls;
     std::vector<QGraphicsLineItem*> allWalls;
     int mazeWidth;
     int mazeHeight;
     std::queue<wallRemoval> wallsToRemove;
+    bool mazeGenerated;
+    bool mazeSolved;
+
+    std::vector<QGraphicsLineItem*> solutionMoves;
 };
 #endif // MAINWINDOW_H
